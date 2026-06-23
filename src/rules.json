@@ -1,0 +1,13 @@
+{
+  "max_length": 2048,
+  "jailbreak_signatures": [
+    "ignore (all )?previous instructions",
+    "system prompt",
+    "you are now (DAN|a developer|an unrestricted AI)",
+    "bypass restrictions",
+    "do not follow the rules",
+    "print your initial instructions",
+    "<\/s>",
+    "\\[INST\\]"
+  ]
+}
