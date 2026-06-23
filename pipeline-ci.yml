@@ -1,0 +1,33 @@
+stages:
+  - audit
+  - build
+  - deploy_production
+
+variables:
+  PODMAN_IMAGE: "aegis-guardrail:latest"
+
+audit_secrets:
+  stage: audit
+  script:
+    - echo "[CISO] Iniciando auditoria de segredos no commit..."
+    - bash ./scripts/audit.sh analyze
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+build_rootless_image:
+  stage: build
+  script:
+    - echo "[CISO] Construindo imagem OCI via Podman..."
+    - podman build -t $PODMAN_IMAGE -f Containerfile .
+    - echo "[CISO] Executando testes de estresse e contenção..."
+    - bash ./scripts/audit.sh stress
+
+deploy_production:
+  stage: deploy_production
+  script:
+    - echo "[CISO] Deploying Aegis Guardrail para Produção..."
+    # Deploy simulado garantindo flags de segurança do CIS Benchmarks
+    - podman run -d --name aegis_prod --read-only --cap-drop=ALL --security-opt no-new-privileges -e API_KEY_VAULT_REF=$PROD_SECRET_REF $PODMAN_IMAGE
+  environment:
+    name: production
+  when: manual
